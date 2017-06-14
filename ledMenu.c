@@ -368,15 +368,17 @@ int main()
 			if (digitalRead(Buttons[i].pin) == LOW)
 			{
 				// Wait some time for debounce
-				delay(50);
+				delay(25);
 				// Read again
 				while (digitalRead(Buttons[i].pin) == LOW && keepRunning)
 				{
+					delay(10);
 					// Still pressed, wait for unhold
 				}
 
 				Buttons[i].OnPress();
 			}
+			delay(10);	// Not so fast!
 		}
 	}
 
