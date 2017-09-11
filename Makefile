@@ -8,10 +8,10 @@ LFLAGS  = -Wall $(DEBUG)
 LIBS    = -I/usr/local/include -L/usr/local/lib -lwiringPi
 
 all: $(OBJS)
-	$(CC) $(LIBS) $(LFLAGS) $(OBJS) -o a.out
+	$(CC) $(LIBS) $(LFLAGS) $(OBJS) -o ledMenu
 
 ledMenu.o: ledMenu.c
 	$(CC) $(CFLAGS) pcd8544.c ledMenu.c
 
 clean:
-	rm *.o a.out
+	rm *.o ledMenu

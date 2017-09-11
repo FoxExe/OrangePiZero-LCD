@@ -22,7 +22,7 @@
 	 LCD5 - D/C    P13 - GPIO2
 	 LCD6 - CS     P15 - GPIO3
 	 LCD7 - RST    P16 - GPIO4
-	 LCD8 - LED    P01 - 3.3V 
+	 LCD8 - LED    P01 - 3.3V
 
  References  :
  http://www.arduino.cc/playground/Code/PCD8544
@@ -43,7 +43,7 @@ Lesser General Public License for more details.
  */
 
 #include <wiringPi.h>
-#include "PCD8544.h"
+#include "pcd8544.h"
 
 #define abs(a) (((a) < 0) ? -(a) : (a))
 #define _BV(bit) (0x1 << (bit))
