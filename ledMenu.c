@@ -11,6 +11,8 @@
 #define PIN_LEFT	1
 #define PIN_RIGHT	4
 
+#define LCD_BACKLIGHT	0
+
 enum {
 	KEY_UP,
 	KEY_DOWN,
@@ -100,6 +102,11 @@ int main(int argc, char **argv)
 */
 
 	wiringPiSetup();
+	
+	// Turn on backlight
+	// TODO: PWM mode for brighteness control
+	pinMode(LCD_BACKLIGHT, OUTPUT);
+	digitalWrite(LCD_BACKLIGHT, HIGHT);
 
 	// LCD Init: CLK, DIN, DC, CS, RST, Contrast (Max: 127)
 	LCDInit(2, 3, 12, 13, 14, 64);
