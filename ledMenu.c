@@ -102,7 +102,7 @@ int main(int argc, char **argv)
 */
 
 	wiringPiSetup();
-	
+
 	// Turn on backlight
 	// TODO: PWM mode for brighteness control
 	pinMode(LCD_BACKLIGHT, OUTPUT);
