@@ -106,11 +106,18 @@ int main(int argc, char **argv)
 	// Turn on backlight
 	// TODO: PWM mode for brighteness control
 	pinMode(LCD_BACKLIGHT, OUTPUT);
-	digitalWrite(LCD_BACKLIGHT, HIGHT);
+	digitalWrite(LCD_BACKLIGHT, LOW);
+
 
 	// LCD Init: CLK, DIN, DC, CS, RST, Contrast (Max: 127)
 	LCDInit(2, 3, 12, 13, 14, 64);
-	LCDdrawstring_P(0, 10, "Hello world!");
+	LCDclear();
+	LCDdisplay();
+
+	LCDdrawstring(2, 2, "Testing");
+	LCDdrawrect(0, 0, LCDWIDTH, LCDHEIGHT, BLACK);
+	LCDdrawline(1, 10, LCDWIDTH-1, 10, BLACK);
+	LCDdisplay();
 
 	// Init buttons
 	for (int i = 0; i < MAX_BTN; i++)
@@ -124,7 +131,7 @@ int main(int argc, char **argv)
 	//CurrentFunction();
 	// or
 	//MainMenu[1].Run();
-
+/*
 	while (1) {
 		for (int i = 0; i < MAX_BTN; i++)
 		{
@@ -141,6 +148,6 @@ int main(int argc, char **argv)
 			}
 		}
 	}
-
+*/
 	return 0;
 }

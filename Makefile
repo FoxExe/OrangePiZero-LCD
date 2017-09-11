@@ -1,17 +1,13 @@
 # Makefile
 
-OBJS    = ledMenu.o
+PROG    = ledMenu
 CC      = gcc
-DEBUG   = -g
-CFLAGS  = -Wall -c $(DEBUG)
-LFLAGS  = -Wall $(DEBUG)
-LIBS    = -I/usr/local/include -L/usr/local/lib -lwiringPi
+CFLAGS  = -Wall -Wextra -O2
+LIBS    = -lwiringPi -lpthread
 
-all: $(OBJS)
-	$(CC) $(LIBS) $(LFLAGS) $(OBJS) -o ledMenu
-
-ledMenu.o: ledMenu.c
-	$(CC) $(CFLAGS) pcd8544.c ledMenu.c
+all:
+        $(CC) $(CFLAGS) pcd8544.c ledMenu.c $(LIBS) -o $(PROG)
 
 clean:
-	rm *.o ledMenu
+        rm *.o 2>&1 >/dev/null || true
+        rm $(PROG) 2>&1 >/dev/null || true
