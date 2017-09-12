@@ -179,7 +179,7 @@ int main(int argc, char **argv)
 	digitalWrite(LCD_BACKLIGHT, LOW);
 
 	// LCD Init: CLK, DIN, DC, CS, RST, Contrast (Max: 127)
-	LCDInit(2, 3, 12, 13, 14, 64);
+	LCDInit(2, 3, 12, 13, 14, 60);
 	LCDshowLogo(FoxLogo);
 	delay(5000);
 
