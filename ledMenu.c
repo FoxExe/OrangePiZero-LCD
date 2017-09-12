@@ -109,7 +109,8 @@ void TurnBacklightOff()
 }
 
 static MenuItem MainMenu[] = {
-	{"1. First Option", DoNothing},
+   //"Max string ###"
+	{"1. Option #1", DoNothing},
 	{"2. Backlight", PrintBackLightMenu},
 	{"3. Network", PrintNetworkSettings},
 };
@@ -194,7 +195,10 @@ int main(int argc, char **argv)
 	//CurrentFunction();
 	// or
 	//MainMenu[1].Run();
-	/*
+
+
+
+/*
 	while (1) {
 		for (int i = 0; i < MAX_BTN; i++)
 		{
@@ -202,12 +206,10 @@ int main(int argc, char **argv)
 				// Wait some time for debounce
 				delay(50);
 				// Read again
-				if (DigitalRead(Buttons[i].pin) == LOW) {
-					// Still pressed, run function.
-					Buttons[i].OnPress();
-					// Do not run twice!
-					Buttons[i].OnPress = DoNothing;
+				while (DigitalRead(Buttons[i].pin) == LOW) {
+					// Still pressed, wait for unhold
 				}
+				Buttons[i].OnPress();
 			}
 		}
 	}
