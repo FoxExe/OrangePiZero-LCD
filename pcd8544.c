@@ -772,6 +772,12 @@ void LCDclear(void)
 	cursor_y = cursor_x = 0;
 }
 
+void LCDshowLogo(const uint8_t *logoBitmap)
+{
+	memcpy(pcd8544_buffer, logoBitmap, LCDWIDTH * LCDHEIGHT / 8);
+	LCDdisplay();
+}
+
 // bitbang serial shift out on select GPIO pin. Data rate is defined by CPU clk speed and CLKCONST_2.
 // Calibrate these value for your need on target platform.
 void shiftOut(uint8_t dataPin, uint8_t clockPin, uint8_t bitOrder, uint8_t val)
