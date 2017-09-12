@@ -774,7 +774,10 @@ void LCDclear(void)
 
 void LCDshowLogo(const uint8_t *logoBitmap)
 {
-	memcpy(pcd8544_buffer, logoBitmap, LCDWIDTH * LCDHEIGHT / 8);
+	//memcpy(pcd8544_buffer, logoBitmap, LCDWIDTH * LCDHEIGHT / 8);
+	uint32_t i;
+	for (i = 0; i < LCDWIDTH * LCDHEIGHT / 8; i++)
+		pcd8544_buffer[i] = logoBitmap[i];
 	LCDdisplay();
 }
 
