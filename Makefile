@@ -9,5 +9,5 @@ all:
 	$(CC) $(CFLAGS) pcd8544.c ledMenu.c $(LIBS) -o $(PROG)
 
 clean:
-	rm *.o 2>&1 >/dev/null || true
-	rm $(PROG) 2>&1 >/dev/null || true
+	-@rm -rf *.o 2>/dev/null || true
+	-@rm -rf $(PROG) 2>/dev/null || true
