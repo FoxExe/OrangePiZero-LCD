@@ -333,11 +333,9 @@ static void my_setpixel(uint8_t x, uint8_t y, uint8_t color)
 
 #ifdef enablePartialUpdate
 static uint8_t xUpdateMin, xUpdateMax, yUpdateMin, yUpdateMax;
-#endif
 
 static void updateBoundingBox(uint8_t xmin, uint8_t ymin, uint8_t xmax, uint8_t ymax)
 {
-#ifdef enablePartialUpdate
 	if (xmin < xUpdateMin)
 		xUpdateMin = xmin;
 	if (xmax > xUpdateMax)
@@ -346,8 +344,9 @@ static void updateBoundingBox(uint8_t xmin, uint8_t ymin, uint8_t xmax, uint8_t 
 		yUpdateMin = ymin;
 	if (ymax > yUpdateMax)
 		yUpdateMax = ymax;
-#endif
+
 }
+#endif
 
 void LCDInit(uint8_t SCLK, uint8_t DIN, uint8_t DC, uint8_t CS, uint8_t RST, uint8_t contrast)
 {
@@ -393,8 +392,16 @@ void LCDInit(uint8_t SCLK, uint8_t DIN, uint8_t DC, uint8_t CS, uint8_t RST, uin
 	// Set display to Normal
 	LCDcommand(PCD8544_DISPLAYCONTROL | PCD8544_DISPLAYNORMAL);
 
+	#ifdef enablePartialUpdate
 	// set up a bounding box for screen updates
 	updateBoundingBox(0, 0, LCDWIDTH - 1, LCDHEIGHT - 1);
+	#endif
+}
+
+void LCDSetFontColor(uint8_t color) {
+	if (color != 0 || color != 1)
+		return;	// Wrong color
+	textcolor = color;
 }
 
 void LCDdrawbitmap(uint8_t x, uint8_t y, const uint8_t *bitmap, uint8_t w, uint8_t h, uint8_t color)
@@ -410,7 +417,9 @@ void LCDdrawbitmap(uint8_t x, uint8_t y, const uint8_t *bitmap, uint8_t w, uint8
 			}
 		}
 	}
+	#ifdef enablePartialUpdate
 	updateBoundingBox(x, y, x + w, y + h);
+	#endif
 }
 
 void LCDdrawstring(uint8_t x, uint8_t y, char *c)
@@ -464,7 +473,9 @@ void LCDdrawchar(uint8_t x, uint8_t y, char c)
 	{
 		my_setpixel(x + 5, y + j, !textcolor);
 	}
+	#ifdef enablePartialUpdate
 	updateBoundingBox(x, y, x + 5, y + 8);
+	#endif
 }
 
 void LCDwrite(uint8_t c)
@@ -510,8 +521,10 @@ void LCDdrawline(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, uint8_t color)
 		swap(y0, y1);
 	}
 
+	#ifdef enablePartialUpdate
 	// much faster to put the test here, since we've already sorted the points
 	updateBoundingBox(x0, y0, x1, y1);
+	#endif
 
 	uint8_t dx, dy;
 	dx = x1 - x0;
@@ -560,7 +573,9 @@ void LCDfillrect(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint8_t color)
 			my_setpixel(i, j, color);
 		}
 	}
+	#ifdef enablePartialUpdate
 	updateBoundingBox(x, y, x + w, y + h);
+	#endif
 }
 
 // draw a rectangle
@@ -578,14 +593,17 @@ void LCDdrawrect(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint8_t color)
 		my_setpixel(x, i, color);
 		my_setpixel(x + w - 1, i, color);
 	}
-
+	#ifdef enablePartialUpdate
 	updateBoundingBox(x, y, x + w, y + h);
+	#endif
 }
 
 // draw a circle outline
 void LCDdrawcircle(uint8_t x0, uint8_t y0, uint8_t r, uint8_t color)
 {
+	#ifdef enablePartialUpdate
 	updateBoundingBox(x0 - r, y0 - r, x0 + r, y0 + r);
+	#endif
 
 	int8_t f = 1 - r;
 	int8_t ddF_x = 1;
@@ -624,7 +642,9 @@ void LCDdrawcircle(uint8_t x0, uint8_t y0, uint8_t r, uint8_t color)
 
 void LCDfillcircle(uint8_t x0, uint8_t y0, uint8_t r, uint8_t color)
 {
+	#ifdef enablePartialUpdate
 	updateBoundingBox(x0 - r, y0 - r, x0 + r, y0 + r);
+	#endif
 	int8_t f = 1 - r;
 	int8_t ddF_x = 1;
 	int8_t ddF_y = -2 * r;
@@ -673,7 +693,9 @@ void LCDsetPixel(uint8_t x, uint8_t y, uint8_t color)
 		pcd8544_buffer[x + (y / 8) * LCDWIDTH] |= _BV(y % 8);
 	else
 		pcd8544_buffer[x + (y / 8) * LCDWIDTH] &= ~_BV(y % 8);
+	#ifdef enablePartialUpdate
 	updateBoundingBox(x, y, x, y);
+	#endif
 }
 
 // the most basic function, get a single pixel
@@ -768,7 +790,9 @@ void LCDclear(void)
 	uint32_t i;
 	for (i = 0; i < LCDWIDTH * LCDHEIGHT / 8; i++)
 		pcd8544_buffer[i] = 0;
+	#ifdef enablePartialUpdate
 	updateBoundingBox(0, 0, LCDWIDTH - 1, LCDHEIGHT - 1);
+	#endif
 	cursor_y = cursor_x = 0;
 }
 
