@@ -158,7 +158,7 @@ void PrintBackLightMenu()
 	DrawMenu();
 }
 
-void DoReboot()
+void DoShutdown()
 {
 	LCDclear();
 	LCDdrawstring(0, 0, "System\nshutdown...");
@@ -167,7 +167,7 @@ void DoReboot()
 	exit(0);
 }
 
-void DoShutdown()
+void DoReboot()
 {
 	LCDclear();
 	LCDdrawstring(0, 0, "System\nRebooting...");
@@ -209,9 +209,9 @@ void ShowTime()
 	LCDdrawstring(15, 26, buffer); // print time HH:MM:SS
 	LCDdisplay();
 
-	Buttons[KEY_RIGHT].OnPress = DoNothing;
-	Buttons[KEY_UP].OnPress = DoNothing;
-	Buttons[KEY_DOWN].OnPress = DoNothing;
+	Buttons[KEY_RIGHT].OnPress = ShowTime;	// TODO: Temporary: Press any key for update screen
+	Buttons[KEY_UP].OnPress = ShowTime;
+	Buttons[KEY_DOWN].OnPress = ShowTime;
 	Buttons[KEY_LEFT].OnPress = PrintMainMenu; // Return to previous menu and reset button controls
 }
 
