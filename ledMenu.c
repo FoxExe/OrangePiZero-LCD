@@ -11,7 +11,11 @@
 #define PIN_LEFT 1
 #define PIN_RIGHT 4
 
+// TODO: Use PWM pin (PA06)
 #define LCD_BACKLIGHT 0
+// LCD_PINS: CLK, DIN, DC, CS, RST, Contrast (Max: 127)
+#define LCD_PINS 2, 3, 12, 13, 14
+#define LCD_CONTRAST 60
 
 const unsigned char FoxLogo[] = {
 	0x00, 0x00, 0x00, 0x00,
@@ -109,10 +113,10 @@ void TurnBacklightOff()
 }
 
 static MenuItem MainMenu[] = {
-   //"Max string ###"
-	{"1. Option #1", DoNothing},
-	{"2. Backlight", PrintBackLightMenu},
-	{"3. Network", PrintNetworkSettings},
+   //"Max string ###" // 14-1(active)=13 symbols max
+	{"Option #1", DoNothing},
+	{"Backlight", PrintBackLightMenu},
+	{"Network", PrintNetworkSettings},
 };
 
 static MenuItem BackLightMenu[] = {
@@ -121,10 +125,13 @@ static MenuItem BackLightMenu[] = {
 };
 
 static MenuItem NetworkSettingsMenu[] = {
-	{"Option #1", DoNothing},
-	{"Option #2", DoNothing},
-	{"Option #3", DoNothing},
+	{"Show info", DoNothing},
+	{"Set IP/DHCP", DoNothing},
+	{"Set DNS", DoNothing},
 };
+
+int ActiveMenuItem = 0;
+MenuItem *ActiveMenu = MainMenu;
 
 // Buttons default state
 Button Buttons[MAX_BTN] = {
@@ -141,8 +148,20 @@ void PrintMenuItems(MenuItem *items, int count, int selected)
 	LCDclear();
 	for (int i = 0; i < count; i++)
 	{
-		LCDdrawstring(0, i * 8 + 1, items[i].Name);
-		printf("%s\n", items[i].Name);
+		/*
+		if (i == ActiveMenuItem) {
+			LCDfillrect(0, i * 8, LCDWIDTH, 9, BLACK);
+			LCDSetFontColor(WHITE);
+			LCDdrawstring(0, i * 8 + 1, ">");
+			LCDdrawstring(6, i * 8 + 1, items[i].Name);
+			LCDSetFontColor(BLACK);
+		} else {
+			LCDdrawstring(6, i * 8 + 1, items[i].Name);
+			//printf("%s\n", items[i].Name);	// DEBUG
+		}
+		*/
+		LCDdrawstring(0, i * 8 + 1, (i == ActiveMenuItem)? ">" : " ");
+		LCDdrawstring(6, i * 8 + 1, items[i].Name);
 	}
 	LCDdisplay();
 }
@@ -152,14 +171,27 @@ void SelectCurrent()
 	printf("SelectCurrent()\n");
 }
 
+void MenuUp()
+{
+	printf("MenuUp()\n");
+}
+
+void MenuDown()
+{
+	printf("MenuDown()\n");
+}
+
 void PrintMainMenu()
 {
 	PrintMenuItems(MainMenu, 3, 0);
 	Buttons[KEY_RIGHT].OnPress = SelectCurrent;
 	Buttons[KEY_LEFT].OnPress = DoNothing;
+	Buttons[KEY_UP].OnPress = MenuUp;
+	Buttons[KEY_DOWN].OnPress = MenuDown;
 }
 
-int main(int argc, char **argv)
+//int main(int argc, char **argv)
+int main()
 {
 	/*
         if (argc != 2) {
@@ -174,14 +206,14 @@ int main(int argc, char **argv)
 	//wiringPiSetupSys();
 
 	// Turn on backlight
-	// TODO: PWM mode for brighteness control
 	pinMode(LCD_BACKLIGHT, OUTPUT);
-	digitalWrite(LCD_BACKLIGHT, LOW);
+	digitalWrite(LCD_BACKLIGHT, LOW);	// LOW = On, HIGH = Off
 
 	// LCD Init: CLK, DIN, DC, CS, RST, Contrast (Max: 127)
-	LCDInit(2, 3, 12, 13, 14, 60);
+	LCDInit(LCD_PINS, LCD_CONTRAST);
 	LCDshowLogo(FoxLogo);
-	delay(5000);
+	// TODO: Show until system fully started (Boot logo)
+	delay(1000);
 
 	// Init buttons
 	for (int i = 0; i < MAX_BTN; i++)
