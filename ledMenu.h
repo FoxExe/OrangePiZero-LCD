@@ -30,6 +30,10 @@ void PrintBackLightMenu();
 void TurnBacklightOn();
 void TurnBacklightOff();
 void ShowTime();
+void DoReboot();
+void DoShutdown();
+void PrintPowerSettings();
+
 int main();
 
 const unsigned char BootLogo[] = {

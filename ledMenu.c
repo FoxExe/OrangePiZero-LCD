@@ -29,17 +29,25 @@ static MenuItem MainMenu[] = {
 	{"Show time", ShowTime},
 	{"Backlight", PrintBackLightMenu},
 	{"Network", PrintNetworkSettings},
+	{"Power control", PrintPowerSettings},
 };
 
 static MenuItem BackLightMenu[] = {
 	{"Turn On", TurnBacklightOn},
 	{"Turn Off", TurnBacklightOff},
+	{"Increase", DoNothing},
+	{"Decrease", DoNothing},
 };
 
 static MenuItem NetworkSettingsMenu[] = {
-	{"Show info", DoNothing},
-	{"Set IP/DHCP", DoNothing},
-	{"Set DNS", DoNothing},
+	{"Show/Set IP", DoNothing},
+	{"Show/Set DNS", DoNothing},
+	{"Show route", DoNothing},	// print like menu with scroll
+};
+
+static MenuItem PowerSettingsMenu[] = {
+	{"Shutdown", DoShutdown},
+	{"Reboot", DoReboot},
 };
 
 // Buttons default state
@@ -65,6 +73,7 @@ void DrawMenu()
 {
 	printf("DrawMenu(); Item: %d of %d\n", ActiveMenuItem, ActiveMenuItems);
 	LCDclear();
+	// TODO: Scroll
 	for (int i = 0; i < ActiveMenuItems; i++)
 	{
 		/*
@@ -149,8 +158,40 @@ void PrintBackLightMenu()
 	DrawMenu();
 }
 
+void DoReboot()
+{
+	LCDclear();
+	LCDdrawstring(0, 0, "System\nshutdown...");
+	LCDdisplay();
+	system("shutdown -P now");
+	exit(0);
+}
+
+void DoShutdown()
+{
+	LCDclear();
+	LCDdrawstring(0, 0, "System\nRebooting...");
+	LCDdisplay();
+	system("reboot");
+	exit(0);
+}
+
+void PrintPowerSettings()
+{
+	Buttons[KEY_RIGHT].OnPress = RunSelected;
+	Buttons[KEY_LEFT].OnPress = PrintMainMenu; // Return to top
+	Buttons[KEY_UP].OnPress = MenuUp;
+	Buttons[KEY_DOWN].OnPress = MenuDown;
+
+	CurrentMenu = &PowerSettingsMenu;
+	ActiveMenuItems = sizeof(PowerSettingsMenu) / sizeof(MenuItem);
+	ActiveMenuItem = 1;
+	DrawMenu();
+}
+
 void ShowTime()
 {
+	// TODO: Update screen every second until [Back] key pressed.
 	LCDclear();
 	LCDdrawstring(0, 0, (*CurrentMenu)[ActiveMenuItem - 1].Name);
 	LCDdrawline(0, 8, LCDWIDTH, 8, BLACK);
@@ -163,9 +204,9 @@ void ShowTime()
 	timeinfo = localtime(&rawtime);
 
 	strftime(buffer, 32, "%d/%m/%Y", timeinfo);
-	LCDdrawstring(10, 18, buffer);
+	LCDdrawstring(10, 10, buffer); // Print date DD/MM/YYYY
 	strftime(buffer, 32, "%H:%M:%S", timeinfo);
-	LCDdrawstring(15, 34, buffer);
+	LCDdrawstring(15, 26, buffer); // print time HH:MM:SS
 	LCDdisplay();
 
 	Buttons[KEY_RIGHT].OnPress = DoNothing;
