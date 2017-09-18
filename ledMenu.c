@@ -9,15 +9,15 @@
 #include "pcd8544.h"
 
 #define MAX_BTN 4
-#define PIN_UP 15
-#define PIN_DOWN 16
-#define PIN_LEFT 4
-#define PIN_RIGHT 5
+#define PIN_UP 9
+#define PIN_DOWN 11
+#define PIN_LEFT 10
+#define PIN_RIGHT 7
 
 // TODO: Use PWM pin (PA06)
-#define LCD_BACKLIGHT 0
+#define LCD_BACKLIGHT 8
 // LCD_PINS: CLK, DIN, DC, CS, RST, Contrast (Max: 127)
-#define LCD_PINS 2, 3, 12, 13, 14
+#define LCD_PINS 6, 5, 4, 16, 15
 #define LCD_CONTRAST 60
 
 void DoNothing()
@@ -257,6 +257,7 @@ int main()
 	for (int i = 0; i < MAX_BTN; i++)
 	{
 		pinMode(Buttons[i].pin, INPUT);
+		pullUpDnControl(Buttons[i].pin, PUD_UP);
 	}
 
 	PrintMainMenu();
