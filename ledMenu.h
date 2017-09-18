@@ -33,6 +33,9 @@ void ShowTime();
 void DoReboot();
 void DoShutdown();
 void PrintPowerSettings();
+void ShowIP();
+void DoExitProgram();
+void ShowLogo();
 
 int main();
 

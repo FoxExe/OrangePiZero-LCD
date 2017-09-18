@@ -3,6 +3,11 @@
 #include <stdio.h>
 #include <signal.h> // Ctrl+c handler
 #include <time.h>
+#include <sys/types.h>
+#include <string.h>
+#include <ifaddrs.h> // For network tools
+#include <netinet/in.h>
+#include <arpa/inet.h>
 
 #include <wiringPi.h>
 #include "ledMenu.h"
@@ -30,24 +35,29 @@ static MenuItem MainMenu[] = {
 	{"Backlight", PrintBackLightMenu},
 	{"Network", PrintNetworkSettings},
 	{"Power control", PrintPowerSettings},
+	{"Show logo", ShowLogo},
+	{"[Exit]", DoExitProgram},
 };
 
 static MenuItem BackLightMenu[] = {
 	{"Turn On", TurnBacklightOn},
 	{"Turn Off", TurnBacklightOff},
-	{"Increase", DoNothing},
-	{"Decrease", DoNothing},
+	{"< Back", PrintMainMenu},
+//	{"Increase", BacklightIncrease},
+//	{"Decrease", BacklightDecrease},
 };
 
 static MenuItem NetworkSettingsMenu[] = {
-	{"Show/Set IP", DoNothing},
+	{"Show/Set IP", ShowIP},
 	{"Show/Set DNS", DoNothing},
-	{"Show route", DoNothing},	// print like menu with scroll
+	{"Show route", DoNothing}, // print like menu with scroll
+	{"< Back", PrintMainMenu},
 };
 
 static MenuItem PowerSettingsMenu[] = {
 	{"Shutdown", DoShutdown},
 	{"Reboot", DoReboot},
+	{"< Back", PrintMainMenu},
 };
 
 // Buttons default state
@@ -176,6 +186,17 @@ void DoReboot()
 	exit(0);
 }
 
+void DoExitProgram() {
+	LCDclear();
+	LCDdrawstring(20, 16, "Goodbye!");
+	LCDdisplay();
+	delay(1000);
+	LCDclear();
+	LCDdisplay();
+	TurnBacklightOff();
+	exit(0);
+}
+
 void PrintPowerSettings()
 {
 	Buttons[KEY_RIGHT].OnPress = RunSelected;
@@ -209,20 +230,92 @@ void ShowTime()
 	LCDdrawstring(15, 26, buffer); // print time HH:MM:SS
 	LCDdisplay();
 
-	Buttons[KEY_RIGHT].OnPress = ShowTime;	// TODO: Temporary: Press any key for update screen
-	Buttons[KEY_UP].OnPress = ShowTime;
-	Buttons[KEY_DOWN].OnPress = ShowTime;
+	Buttons[KEY_RIGHT].OnPress = ShowTime; // TODO: Temporary: Press any key for update screen
+	Buttons[KEY_UP].OnPress = TurnBacklightOn;
+	Buttons[KEY_DOWN].OnPress = TurnBacklightOff;
 	Buttons[KEY_LEFT].OnPress = PrintMainMenu; // Return to previous menu and reset button controls
+}
+
+void ShowIP()
+{
+	Buttons[KEY_RIGHT].OnPress = ShowIP;
+	Buttons[KEY_LEFT].OnPress = PrintNetworkSettings;
+	Buttons[KEY_UP].OnPress = DoNothing;
+	Buttons[KEY_DOWN].OnPress = DoNothing;
+
+	/*
+	// TODO: Show interfaces as menu list
+	CurrentMenu = &AddrList;
+	ActiveMenuItems = eth_count;
+	ActiveMenuItem = 1;
+	*/
+
+	struct ifaddrs *ifAddrStruct = NULL;
+	struct ifaddrs *ifa = NULL;
+	void *tmpAddrPtr = NULL;
+	uint8_t line = 0;
+
+	getifaddrs(&ifAddrStruct);
+
+	LCDclear();
+
+	for (ifa = ifAddrStruct; ifa != NULL; ifa = ifa->ifa_next)
+	{
+		// Ignore not connected
+		if (ifa->ifa_addr == NULL)
+			continue;
+
+		// Ignore Localhost
+		if (strcmp(ifa->ifa_name, "lo") == 0)
+			continue;
+
+		// Show only IPv4
+		if (ifa->ifa_addr->sa_family == AF_INET)
+		{
+			tmpAddrPtr = &((struct sockaddr_in *)ifa->ifa_addr)->sin_addr;
+			char addressBuffer[INET_ADDRSTRLEN];
+			inet_ntop(AF_INET, tmpAddrPtr, addressBuffer, INET_ADDRSTRLEN);
+			//printf("'%s': %s\n", ifa->ifa_name, addressBuffer);
+			LCDdrawstring(5, line * 16, ifa->ifa_name);
+			LCDdrawstring(0, line * 16 + 8, addressBuffer);
+			line++;
+		}
+		/*
+		// Show IPv6
+		else if (ifa->ifa_addr->sa_family == AF_INET6)
+		{
+			tmpAddrPtr = &((struct sockaddr_in6 *)ifa->ifa_addr)->sin6_addr;
+			char addressBuffer[INET6_ADDRSTRLEN];
+			inet_ntop(AF_INET6, tmpAddrPtr, addressBuffer, INET6_ADDRSTRLEN);
+			printf("'%s': %s\n", ifa->ifa_name, addressBuffer);
+		}
+		*/
+	}
+
+	LCDdisplay();
+
+	if (ifAddrStruct != NULL)
+		freeifaddrs(ifAddrStruct); //remember to free ifAddrStruct
 }
 
 void TurnBacklightOn()
 {
+	//digitalWrite(LCD_BACKLIGHT, !digitalRead(LCD_BACKLIGHT));	// Switch
 	digitalWrite(LCD_BACKLIGHT, LOW);
 }
 
 void TurnBacklightOff()
 {
 	digitalWrite(LCD_BACKLIGHT, HIGH);
+}
+
+void ShowLogo() {
+	Buttons[KEY_RIGHT].OnPress = DoNothing;
+	Buttons[KEY_LEFT].OnPress = PrintMainMenu;
+	Buttons[KEY_UP].OnPress = TurnBacklightOn;
+	Buttons[KEY_DOWN].OnPress = TurnBacklightOff;
+
+	LCDshowLogo(BootLogo);	// No need to clear display and draw image.
 }
 
 //int main(int argc, char **argv)
@@ -287,9 +380,5 @@ int main()
 		}
 	}
 
-	LCDclear();
-	LCDdisplay();
-	TurnBacklightOff();
-
-	return 0;
+	DoExitProgram();
 }
