@@ -29,13 +29,16 @@ void PrintNetworkSettings();
 void PrintBackLightMenu();
 void TurnBacklightOn();
 void TurnBacklightOff();
+void DrawClock();
 void ShowTime();
+void StopAndPrintMenu();
 void DoReboot();
 void DoShutdown();
 void PrintPowerSettings();
 void ShowIP();
 void DoExitProgram();
 void ShowLogo();
+
 
 int main();
 

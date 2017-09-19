@@ -72,6 +72,8 @@ int ActiveMenuItem = 1; // SHould start from 1 for future tests
 int ActiveMenuItems = 0;
 static int keepRunning = 1;
 MenuItem (*CurrentMenu)[];
+void (*DoSomething)();
+unsigned long PreviousMllis = 0;
 
 void intHandler(int dummy)
 {
@@ -210,30 +212,43 @@ void PrintPowerSettings()
 	DrawMenu();
 }
 
+void DrawClock() {
+	unsigned long CurrentMillis = millis();
+
+	if (CurrentMillis - PreviousMllis >= 1000) {
+		printf("DrawClock() in %lu\n", CurrentMillis);
+		PreviousMllis = CurrentMillis;
+		char buffer[32];
+		time_t rawtime;
+		time(&rawtime);
+		struct tm *timeinfo = localtime(&rawtime);
+
+		LCDclear();
+		LCDdrawstring(0, 0, (*CurrentMenu)[ActiveMenuItem - 1].Name);
+		LCDdrawline(0, 8, LCDWIDTH, 8, BLACK);
+
+		strftime(buffer, 32, "%d/%m/%Y", timeinfo);
+		LCDdrawstring(10, 10, buffer); // Print date DD/MM/YYYY
+		strftime(buffer, 32, "%H:%M:%S", timeinfo);
+		LCDdrawstring(15, 26, buffer); // print time HH:MM:SS
+
+		LCDdisplay();
+	}
+}
+
+void StopAndPrintMenu() {
+	DoSomething = DoNothing;
+	PrintMainMenu();
+}
+
 void ShowTime()
 {
-	// TODO: Update screen every second until [Back] key pressed.
-	LCDclear();
-	LCDdrawstring(0, 0, (*CurrentMenu)[ActiveMenuItem - 1].Name);
-	LCDdrawline(0, 8, LCDWIDTH, 8, BLACK);
+	DoSomething = DrawClock;
 
-	time_t rawtime;
-	struct tm *timeinfo;
-	char buffer[32];
-
-	time(&rawtime);
-	timeinfo = localtime(&rawtime);
-
-	strftime(buffer, 32, "%d/%m/%Y", timeinfo);
-	LCDdrawstring(10, 10, buffer); // Print date DD/MM/YYYY
-	strftime(buffer, 32, "%H:%M:%S", timeinfo);
-	LCDdrawstring(15, 26, buffer); // print time HH:MM:SS
-	LCDdisplay();
-
-	Buttons[KEY_RIGHT].OnPress = ShowTime; // TODO: Temporary: Press any key for update screen
+	Buttons[KEY_RIGHT].OnPress = DoNothing; // TODO: Temporary: Press any key for update screen
 	Buttons[KEY_UP].OnPress = TurnBacklightOn;
 	Buttons[KEY_DOWN].OnPress = TurnBacklightOff;
-	Buttons[KEY_LEFT].OnPress = PrintMainMenu; // Return to previous menu and reset button controls
+	Buttons[KEY_LEFT].OnPress = StopAndPrintMenu; // Return to previous menu and reset button controls
 }
 
 void ShowIP()
@@ -331,6 +346,8 @@ int main()
 	printf("Program started...\n");
 	signal(SIGINT, intHandler);
 
+	DoSomething = DoNothing;
+
 	if (wiringPiSetup() == -1)
 		return 1;
 
@@ -364,6 +381,7 @@ int main()
 	{
 		for (int i = 0; i < MAX_BTN; i++)
 		{
+			DoSomething();
 			// LOW = Pressed (0), HIGH = unpressed (1)
 			if (digitalRead(Buttons[i].pin) == LOW)
 			{
